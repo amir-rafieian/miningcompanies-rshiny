@@ -1,6 +1,6 @@
-#Mining Companies Internal Value
+# Mining Companies Internal Value
 
-##Introduction
+## Introduction
 Mining Companies have different mining plots which are graded from 1 to 3 (Grade 1 is the most expensive). The amount and quality of
 plots in possession of the mining company are the strong indicator of the internal value of the company. different investors
 with different strategies have different opinions of the weights of the grades, one may think level 1 is 10 times more valuable than 
@@ -18,5 +18,5 @@ The main aim of this project is to examine  different elements of R shiny:
 - Format the columns in datatable
 - download data from data table as csv and download plot as png file
 
-##Disclaimer
+## Disclaimer
 The dataset in this project is a dummy data and symbols have to relation to the real mining companies
