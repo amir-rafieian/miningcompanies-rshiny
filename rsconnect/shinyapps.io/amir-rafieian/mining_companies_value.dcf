@@ -1,0 +1,13 @@
+name: mining_companies_value
+title: Mining Companies Value
+username:
+account: amir-rafieian
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 222049
+bundleId: 1011027
+url: https://amir-rafieian.shinyapps.io/mining_companies_value/
+when: 1507143612.75927
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Description.txt

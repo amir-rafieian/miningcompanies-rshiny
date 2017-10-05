@@ -1,0 +1,128 @@
+library(shiny)
+library(shinythemes)
+library(DT)
+library(ggplot2)
+library(grDevices)
+
+dataset <- read.csv("proj-data.csv",sep=';')
+
+server <- function(input,output,session){
+
+  #Prepare dataset for the "Dataset" tabPanel
+  output$tableDT <- DT::renderDataTable(datatable(dataset,
+                                        options = list(paging=TRUE,"pageLength" = 15),
+                                        rownames = TRUE,
+                                        filter = "top") %>% 
+                                          formatCurrency("MarketCap.in.M","$",digits=0) %>%
+                                          formatStyle("MarketCap.in.M",color="green") %>% 
+                                          formatStyle(c("G1","G2","G3"),backgroundColor = "lightblue") %>% 
+                                          formatStyle("Symbol",color="gray"))
+  
+  
+  #Dataset with a new Calculated field according to the weights
+  x_data <- reactive({
+    dataset$calculated <- dataset$G1*input$slider_g1 + dataset$G2*input$slider_g2 + dataset$G3*input$slider_g3
+    return(dataset)
+    #or just this line:
+    #cbind(dataset,calculated = dataset$G1*input$slider_g1 + dataset$G2*input$slider_g2 + dataset$G3*input$slider_g3)
+    
+  })
+  
+  #Plot the points based on the new calculated field
+  output$plot <- renderPlot({
+    ggplot(data=x_data(),aes(x=calculated,y=MarketCap.in.M))+
+      geom_point(size=2)+
+      geom_smooth(method='lm')+
+      ggtitle("Internal Value Vs. Market Capitalization")+
+      xlab("Calculated Score")+
+      ylab("Market Capitalization in Millions USD")+
+      theme(plot.title = element_text(hjust = 0.5,size=20),plot.background = element_rect(fill = "#f5f5f5"))
+  })
+  
+  #Selected Points from the plot and show the entries on output$table
+  companies <- reactive({
+    plot_brush <- input$user_brush
+    sel <- brushedPoints(x_data(),plot_brush)
+    print(sel)
+    return(sel)
+  })
+
+  output$table <- DT::renderDataTable(DT::datatable(companies()))
+  
+  
+  #Table download Button 
+  output$downloadTable.csv <- downloadHandler(
+    filename = function() {
+      paste('extract','.csv', sep='')
+    },
+    content = function(file) {
+      write.csv(companies(),file)
+      }
+  )
+
+  
+  #Plot download Button  
+  output$downloadplot.png <- downloadHandler(
+    filename = function() {
+      paste('plot','.png', sep='')
+    },
+    content = function(file) {
+      png(file)
+      generated_plot <- ggplot(data=x_data(),aes(x=calculated,y=MarketCap.in.M))+
+        geom_point(size=2)+
+        geom_smooth(method='lm')+
+        ggtitle("Internal Value Vs. Market Capitalization")+
+        xlab("Calculated Score")+
+        ylab("Market Capitalization in Millions USD")+
+        theme(plot.title = element_text(hjust = 0.5,size=20),plot.background = element_rect(fill = "#f5f5f5"))
+      
+      print(generated_plot)
+      
+      dev.off()
+    },
+    contentType = "image/png"
+  )
+  
+  
+  
+}
+
+ui <- navbarPage(
+  theme = shinytheme('flatly'),
+  #themeSelector(),
+  title = "The Mining Stock Scale",
+  tabPanel(title='Adjust Mining Stocks',
+           fluidRow(column(width = 12, wellPanel(
+             sliderInput("slider_g1",label = "Weight on Grade 1",min=0,max=20,value=1,width = '99%'),
+             sliderInput("slider_g2",label = "Weight on Grade 2",min=0,max=20,value=1,width = '99%'),
+             sliderInput("slider_g3",label = "Weight on Grade 3",min=0,max=5,value=1,width = '99%',step=0.5)
+           ))),
+           fluidRow(column(width = 12, wellPanel(
+             plotOutput("plot",brush="user_brush"),
+             tags$hr(),
+             downloadButton("downloadplot.png", "Download the plot")
+           ))),
+           fluidRow(column(width = 12, wellPanel(
+           DT::dataTableOutput("table"),
+           downloadButton(outputId = 'downloadTable.csv',label = 'Download Table')
+           ))),
+           icon = icon("line-chart")
+           ),
+  tabPanel(title='Dataset',
+           DT::dataTableOutput('tableDT'),
+           icon = icon("database"))
+  
+)
+
+shinyApp(ui=ui,server=server)
+
+
+
+###################### Resources ###############################
+#1- icon for tabpanels: 
+#https://shiny.rstudio.com/reference/shiny/latest/icon.html
+#http://fontawesome.io/icons/
+
+
+
+
