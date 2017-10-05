@@ -17,3 +17,6 @@ The main aim of this project is to examine  different elements of R shiny:
 - Using brush to select data points on the graph and display the related entries from dataset 
 - Format the columns in datatable
 - download data from data table as csv and download plot as png file
+
+##Disclaimer
+The dataset in this project is a dummy data and symbols have to relation to the real mining companies
